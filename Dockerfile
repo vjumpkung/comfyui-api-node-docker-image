@@ -57,9 +57,9 @@ RUN git clone https://github.com/Comfy-Org/ComfyUI-Manager.git
 
 WORKDIR /
 
-RUN uv pip install --system torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
-RUN uv pip install --system -r https://raw.githubusercontent.com/comfyanonymous/ComfyUI/refs/heads/master/requirements.txt
-RUN uv pip install --system -r https://raw.githubusercontent.com/Comfy-Org/ComfyUI-Manager/refs/heads/main/requirements.txt
+RUN uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
+RUN uv pip install -r https://raw.githubusercontent.com/comfyanonymous/ComfyUI/refs/heads/master/requirements.txt
+RUN uv pip install -r https://raw.githubusercontent.com/Comfy-Org/ComfyUI-Manager/refs/heads/main/requirements.txt
 RUN uv cache clean
 
 # Change working directory to ComfyUI
@@ -89,7 +89,7 @@ ENV PIP_NO_INPUT=1
 COPY scripts/comfy-manager-set-mode.sh /usr/local/bin/comfy-manager-set-mode
 RUN chmod +x /usr/local/bin/comfy-manager-set-mode
 
-RUN uv cache clean
+RUN uv pip install "numpy<2" && uv cache clean
 
 # Set the default command to run when starting the container
 CMD ["/start.sh"]
