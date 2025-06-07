@@ -164,9 +164,11 @@ def validate_input(job_input):
                 None,
                 "'images' must be a list of objects with 'name' and 'image' keys",
             )
+            
+    extra_data = job_input.get("extra_data")
 
     # Return validated data and no error
-    return {"workflow": workflow, "images": images}, None
+    return {"workflow": workflow, "images": images, "extra_data": extra_data}, None
 
 
 def check_server(url, retries=500, delay=50):
@@ -318,7 +320,7 @@ def get_available_models():
         return {}
 
 
-def queue_workflow(workflow, client_id):
+def queue_workflow(workflow, client_id, extra_data=None):
     """
     Queue a workflow to be processed by ComfyUI
 
@@ -333,7 +335,7 @@ def queue_workflow(workflow, client_id):
         ValueError: If the workflow validation fails with detailed error information
     """
     # Include client_id in the prompt payload
-    payload = {"prompt": workflow, "client_id": client_id}
+    payload = {"prompt": workflow, "client_id": client_id, "extra_data": extra_data}
     data = json.dumps(payload).encode("utf-8")
 
     # Use requests for consistency and timeout
@@ -495,7 +497,9 @@ def handler(job):
 
     # Extract validated data
     workflow = validated_data["workflow"]
+    extra_data = validated_data.get("extra_data")
     input_images = validated_data.get("images")
+    
 
     # Make sure that the ComfyUI HTTP API is available before proceeding
     if not check_server(
@@ -533,7 +537,7 @@ def handler(job):
 
         # Queue the workflow
         try:
-            queued_workflow = queue_workflow(workflow, client_id)
+            queued_workflow = queue_workflow(workflow, client_id, extra_data)
             prompt_id = queued_workflow.get("prompt_id")
             if not prompt_id:
                 raise ValueError(
