@@ -164,11 +164,15 @@ def validate_input(job_input):
                 None,
                 "'images' must be a list of objects with 'name' and 'image' keys",
             )
-            
-    extra_data = job_input.get("extra_data")
 
-    # Return validated data and no error
-    return {"workflow": workflow, "images": images, "extra_data": extra_data}, None
+    extra_data = job_input.get("extra_data", None)
+
+    if job_input.get("extra_data") != None:
+        # Return validated data with extra data and no error
+        return {"workflow": workflow, "images": images, "extra_data": extra_data}, None
+    else:
+        # Return validated data without extra data and no error
+        return {"workflow": workflow, "images": images}, None
 
 
 def check_server(url, retries=500, delay=50):
@@ -335,7 +339,11 @@ def queue_workflow(workflow, client_id, extra_data=None):
         ValueError: If the workflow validation fails with detailed error information
     """
     # Include client_id in the prompt payload
-    payload = {"prompt": workflow, "client_id": client_id, "extra_data": extra_data}
+    payload = {"prompt": workflow, "client_id": client_id}
+
+    if extra_data != None:
+        payload["extra_data"] = extra_data
+
     data = json.dumps(payload).encode("utf-8")
 
     # Use requests for consistency and timeout
@@ -499,7 +507,6 @@ def handler(job):
     workflow = validated_data["workflow"]
     extra_data = validated_data.get("extra_data")
     input_images = validated_data.get("images")
-    
 
     # Make sure that the ComfyUI HTTP API is available before proceeding
     if not check_server(
