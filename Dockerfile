@@ -92,7 +92,7 @@ RUN chmod +x /usr/local/bin/comfy-manager-set-mode
 RUN uv pip install "numpy<2" && uv cache clean
 
 # install another custom nodes
-RUN comfy-node-install comfyui-florence2 comfyui_layerstyle was-node-suite-comfyui comfyui_ultimatesdupscale comfyui-kjnodes comfyui_essentials comfyui-impact-pack rgthree-comfy comfyui-custom-scripts comfyui_controlnet_aux comfyui_ipadapter_plus
+RUN yes | comfy-node-install comfyui-florence2 comfyui_layerstyle was-node-suite-comfyui comfyui_ultimatesdupscale comfyui-kjnodes comfyui_essentials comfyui-impact-pack rgthree-comfy comfyui-custom-scripts comfyui_controlnet_aux comfyui_ipadapter_plus
 
 RUN pip cache purge
 
