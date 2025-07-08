@@ -91,16 +91,10 @@ RUN chmod +x /usr/local/bin/comfy-manager-set-mode
 
 RUN uv pip install "numpy<2" && uv cache clean
 
-# install another custom nodes
-RUN yes | comfy-node-install comfyui-florence2 comfyui_layerstyle was-node-suite-comfyui comfyui_ultimatesdupscale comfyui-kjnodes comfyui_essentials comfyui-impact-pack rgthree-comfy comfyui-custom-scripts comfyui_controlnet_aux comfyui_ipadapter_plus
-
-RUN pip cache purge
-
 # Set the default command to run when starting the container
 CMD ["/start.sh"]
 
 # Stage 2: Download models
-FROM base AS downloader
 
 # Change working directory to ComfyUI
 WORKDIR /comfyui
@@ -108,8 +102,14 @@ WORKDIR /comfyui
 # Create necessary directories upfront
 RUN mkdir -p models/checkpoints models/vae models/unet models/clip
 
-# Stage 3: Final image
-FROM base AS final
+# copy config.ini
+RUN mkdir -p ./user/default/ComfyUI-Manager
 
-# Copy models from stage 2 to the final image
-COPY --from=downloader /comfyui/models /comfyui/models
+COPY src/config.ini ./user/default/ComfyUI-Manager/
+
+# install another custom nodes
+RUN /usr/bin/yes | comfy-node-install comfyui-florence2 comfyui_layerstyle was-node-suite-comfyui comfyui_ultimatesdupscale comfyui-kjnodes comfyui_essentials comfyui-impact-pack rgthree-comfy comfyui-custom-scripts comfyui_controlnet_aux comfyui_ipadapter_plus
+
+RUN pip cache purge
+
+WORKDIR /
