@@ -47,7 +47,7 @@ RUN wget -qO- https://astral.sh/uv/install.sh | sh \
 ENV PATH="/opt/venv/bin:${PATH}"
 
 # Install comfy-cli + dependencies needed by it to install ComfyUI
-RUN uv pip install comfy-cli pip setuptools wheel "numpy<2"
+RUN uv pip install comfy-cli pip setuptools wheel
 
 # Install ComfyUI
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /comfyui
@@ -57,7 +57,7 @@ RUN git clone https://github.com/Comfy-Org/ComfyUI-Manager.git
 
 WORKDIR /
 
-RUN uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
+RUN uv pip install torch==2.7.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
 RUN uv pip install -r https://raw.githubusercontent.com/comfyanonymous/ComfyUI/refs/heads/master/requirements.txt
 RUN uv pip install -r https://raw.githubusercontent.com/Comfy-Org/ComfyUI-Manager/refs/heads/main/requirements.txt
 RUN uv cache clean
@@ -90,6 +90,11 @@ COPY scripts/comfy-manager-set-mode.sh /usr/local/bin/comfy-manager-set-mode
 RUN chmod +x /usr/local/bin/comfy-manager-set-mode
 
 RUN uv pip install "numpy<2" && uv cache clean
+
+# install another custom nodes
+RUN comfy-node-install comfyui-florence2 comfyui_layerstyle was-node-suite-comfyui comfyui_ultimatesdupscale comfyui-kjnodes comfyui_essentials comfyui-impact-pack rgthree-comfy comfyui-custom-scripts comfyui_controlnet_aux comfyui_ipadapter_plus
+
+RUN pip cache purge
 
 # Set the default command to run when starting the container
 CMD ["/start.sh"]
