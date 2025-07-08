@@ -112,4 +112,6 @@ RUN /usr/bin/yes | comfy-node-install comfyui-florence2 comfyui_layerstyle was-n
 
 RUN pip cache purge
 
+RUN uv pip install -r https://raw.githubusercontent.com/comfyanonymous/ComfyUI/refs/heads/master/requirements.txt && uv cache clean
+
 WORKDIR /
