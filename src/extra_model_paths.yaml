@@ -18,7 +18,6 @@ runpod_worker_comfy:
   grounding-dino: models/grounding-dino/
   hypernetworks: models/hypernetworks/
   insightface: models/insightface/
-  ipadapter: models/ipadapter/
   loras: models/loras/
   mmdets: models/mmdets/
   nsfw_detector: models/nsfw_detector/

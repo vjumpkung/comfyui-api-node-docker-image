@@ -108,7 +108,7 @@ RUN mkdir -p ./user/default/ComfyUI-Manager
 COPY src/config.ini ./user/default/ComfyUI-Manager/
 
 # install another custom nodes
-RUN /usr/bin/yes | comfy-node-install comfyui-florence2 comfyui_layerstyle was-node-suite-comfyui comfyui_ultimatesdupscale comfyui-kjnodes comfyui_essentials comfyui-impact-pack rgthree-comfy comfyui-custom-scripts comfyui_controlnet_aux comfyui_ipadapter_plus
+RUN /usr/bin/yes | comfy-node-install comfyui-florence2 comfyui_layerstyle was-node-suite-comfyui comfyui-kjnodes comfyui_essentials comfyui-impact-pack rgthree-comfy comfyui-custom-scripts comfyui_controlnet_aux comfyui_ipadapter_plus
 
 RUN pip cache purge
 

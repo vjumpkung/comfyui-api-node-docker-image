@@ -1,23 +1,27 @@
-import runpod
-from runpod.serverless.utils import rp_upload
-import json
-import urllib.request
-import urllib.parse
-import time
-import os
-import requests
 import base64
-from io import BytesIO
-import websocket
-import uuid
-import tempfile
+import json
+import os
 import socket
+import tempfile
+import time
 import traceback
+import urllib.parse
+import uuid
+from io import BytesIO
+
+import requests
+import runpod
+import websocket
+from runpod.serverless.utils import rp_upload
 
 # Time to wait between API check attempts in milliseconds
-COMFY_API_AVAILABLE_INTERVAL_MS = 50
+COMFY_API_AVAILABLE_INTERVAL_MS = int(
+    os.environ.get("COMFY_API_AVAILABLE_INTERVAL_MS", 100)
+)
 # Maximum number of API check attempts
-COMFY_API_AVAILABLE_MAX_RETRIES = 500
+COMFY_API_AVAILABLE_MAX_RETRIES = int(
+    os.environ.get("COMFY_API_AVAILABLE_MAX_RETRIES", 1000)
+)
 # Websocket reconnection behaviour (can be overridden through environment variables)
 # NOTE: more attempts and diagnostics improve debuggability whenever ComfyUI crashes mid-job.
 #   • WEBSOCKET_RECONNECT_ATTEMPTS sets how many times we will try to reconnect.
@@ -234,16 +238,21 @@ def upload_images(images):
             name = image["name"]
             image_data_uri = image["image"]  # Get the full string (might have prefix)
 
-            # --- Strip Data URI prefix if present ---
-            if "," in image_data_uri:
-                # Find the comma and take everything after it
-                base64_data = image_data_uri.split(",", 1)[1]
+            # --- Strip Data URI prefix if present or image url ---
+            if image_data_uri.startswith(("http://", "https://")):
+                image_res = requests.get(image_data_uri)
+                image_res.raise_for_status()
+                blob = image_res.content
             else:
-                # Assume it's already pure base64
-                base64_data = image_data_uri
-            # --- End strip ---
+                if "," in image_data_uri:
+                    # Find the comma and take everything after it
+                    base64_data = image_data_uri.split(",", 1)[1]
+                else:
+                    # Assume it's already pure base64
+                    base64_data = image_data_uri
+                # --- End strip ---
 
-            blob = base64.b64decode(base64_data)  # Decode the cleaned data
+                blob = base64.b64decode(base64_data)  # Decode the cleaned data
 
             # Prepare the form data
             files = {
@@ -345,7 +354,6 @@ def queue_workflow(workflow, client_id, extra_data=None):
         payload["extra_data"] = extra_data
 
     data = json.dumps(payload).encode("utf-8")
-
     # Use requests for consistency and timeout
     headers = {"Content-Type": "application/json"}
     response = requests.post(
@@ -804,4 +812,14 @@ def handler(job):
 
 if __name__ == "__main__":
     print("worker-comfyui - Starting handler...")
+    # Make sure that the ComfyUI HTTP API is available before proceeding
+    if check_server(
+        f"http://{COMFY_HOST}/",
+        COMFY_API_AVAILABLE_MAX_RETRIES,
+        COMFY_API_AVAILABLE_INTERVAL_MS,
+    ):
+        print("ComfyUI started ready to starting handler")
+    else:
+        print("ComfyUI still not ready yet and will check later")
+
     runpod.serverless.start({"handler": handler})
